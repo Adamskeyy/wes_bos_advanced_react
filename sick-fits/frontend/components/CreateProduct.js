@@ -6,7 +6,7 @@ import Form from './styles/Form';
 import DisplayError from './ErrorMessage';
 import { ALL_PRODUCTS_QUERY } from './Products';
 
-const CREATE_PRODUCT_MUTATION = gql`
+export const CREATE_PRODUCT_MUTATION = gql`
   mutation CREATE_PRODUCT_MUTATION(
     # Which variables are getting passed in? And What types are they
     $name: String!
@@ -34,9 +34,9 @@ const CREATE_PRODUCT_MUTATION = gql`
 export default function CreateProduct() {
   const { inputs, handleChange, clearForm, resetForm } = useForm({
     image: '',
-    name: 'Nice Shoes',
-    price: 34234,
-    description: 'These are the best shoes!',
+    name: '',
+    price: 0,
+    description: '',
   });
   const [createProduct, { loading, error, data }] = useMutation(
     CREATE_PRODUCT_MUTATION,
@@ -45,14 +45,19 @@ export default function CreateProduct() {
       refetchQueries: [{ query: ALL_PRODUCTS_QUERY }],
     }
   );
-  const submitProduct = async (e) => {
-    e.preventDefault();
-    const res = await createProduct();
-    clearForm();
-    Router.push({ pathname: `/product/${res.data.createProduct.id}` });
-  };
   return (
-    <Form onSubmit={submitProduct}>
+    <Form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        // Submit the inputfields to the backend:
+        const res = await createProduct();
+        clearForm();
+        // Go to that product's page!
+        Router.push({
+          pathname: `/product/${res.data.createProduct.id}`,
+        });
+      }}
+    >
       <DisplayError error={error} />
       <fieldset disabled={loading} aria-busy={loading}>
         <label htmlFor="image">
